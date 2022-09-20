@@ -4,15 +4,21 @@ IPCAM 또는 WEBCAM 화면을 수동 / 자동 캡처하는 프로그램
 
 ------------
 
+## v2 변경 사항
+
+    1. --mode 옵션만 입력해도 실행 가능 (나머지 옵션은 FFMPEG 모드를 위한 옵션으로 기본값 지정)
+    2. 스크린샷 촬영 시 명령 프롬프트 창을 확인하지 않아도 촬영 여부 확인 가능
+    3. 명령 프롬프트 창을 통해 카메라 연결 여부 등 세부 상황 확인 가능
+
 ## 사용 방법
 
 #### 1. 명렁 프롬프트에서 cctv_capture2.py 파일을 실행한다.
-    python cctv_capture2.py --mode [모드] --source [카메라 소스] --width [너비] --height [높이]
+    python cctv_capture2.py --mode [모드] [--source [카메라 소스] --width [너비] --height [높이]]
 
 옵션 설명
 
     1. 모드: OPENCV / FFMPEG 중 하나를 입력
-    2. 카메라 소스: WEBCAM 인덱스 또는 RTSP, HTTP 등 IPCAM 주소
+    2. 카메라 소스: WEBCAM 인덱스 또는 RTSP, HTTP 등 IPCAM 주소 (기본값: KIOSK에 연결된 카메라 RTSP 주소)
     3. 너비: 카메라 프레임의 너비 (기본값: 1080)
     4. 높이: 카메라 프레임의 높이 (기본값: 1920)
 
