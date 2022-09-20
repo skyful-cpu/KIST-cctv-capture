@@ -18,6 +18,7 @@ class VideoFrame:
         '''
 
         self.is_auto_screenshot = False
+        self.save_flag = False
 
     def set_capture_mode(self, capture_mode):
         '''
@@ -26,6 +27,7 @@ class VideoFrame:
         '''
 
         self.capture_mode = capture_mode
+        print(f"capture mode: {self.capture_mode}")
 
     def set_ffmpeg_command(self, ffempeg_command):
         '''
@@ -41,6 +43,7 @@ class VideoFrame:
         '''
 
         self.camera_source = camera_source
+        print(f"camera source: {self.camera_source}")
 
     def set_frame_size(self, width, height):
         '''
@@ -50,6 +53,9 @@ class VideoFrame:
         
         self.width = width
         self.height = height
+        
+        if self.capture_mode == FFMPEG_MODE:
+            print(f"image frame: {self.width} x {self.height}")
 
     def set_autocapture(self, count, time_interval):
         '''
@@ -67,14 +73,23 @@ class VideoFrame:
         '''
         Create capture instance and be ready to get each frame
         '''
+        print(f"connecting camera {self.camera_source}...")
 
         if self.capture_mode == OPENCV_MODE:
-            self.cap = cv2.VideoCapture(self.camera_source)
-            print(f"connected camera src {self.camera_source}")
-            pass
+            try:
+                webcam_source = int(self.camera_source)
+                self.cap = cv2.VideoCapture(webcam_source)
+
+            except Exception as e:
+                self.cap = cv2.VideoCapture(self.camera_source)
+            
+            print(f"connected camera src {self.camera_source} in OPENCV mode")
 
         elif self.capture_mode == FFMPEG_MODE:
             self.p1 = subprocess.Popen(self.ffmpeg_command, stdout=subprocess.PIPE)
+            print(f"connected camera src {self.camera_source} in FFMPEG mode")
+        else:
+            print("INVALID CAPTURE MODE!!")
 
     def get_frame(self):
         '''
@@ -96,6 +111,8 @@ class VideoFrame:
 
                 if cv2.waitKey(1) == 115:
                     self.save_screenshot(frame)
+                    self.save_flag = True
+                    self.save_timestamp = time()
 
                 if cv2.waitKey(1) == 97:
                     self.is_auto_screenshot = True
@@ -106,6 +123,9 @@ class VideoFrame:
                 if self.is_auto_screenshot:
                     self.save_screenshot_auto(frame)
                     frame = self.show_count(frame)
+
+                if self.save_flag:
+                    frame = self.show_if_saved(frame)
 
                 cv2.imshow("window", frame)
 
@@ -140,8 +160,25 @@ class VideoFrame:
                     print(e)
                     break
 
-    def show_frame_window(self, frame):
-        cv2.imshow("window", frame)
+    def show_if_saved(self, frame):
+
+        if time() - self.save_timestamp <= 2:
+
+            frame_return = cv2.putText(
+                frame,
+                f"saved",
+                (10, 80),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                3,
+                (250, 0, 0),
+                3
+            )
+
+            return frame_return
+        
+        if time() - self.save_timestamp >= 2:
+            self.save_flag = False
+            return frame
 
     def save_screenshot(self, frame):
         '''
@@ -152,6 +189,8 @@ class VideoFrame:
         dir_name = strftime('%y%m%d', localtime())
         file_name = strftime("%y%m%d_%H-%M-%S", localtime())
 
+        if not os.path.isdir("../screenshot"):
+            os.mkdir("../screenshot")
         if not os.path.isdir(f"../screenshot/{dir_name}"):
             os.mkdir(f"../screenshot/{dir_name}")
         
