@@ -24,7 +24,7 @@ CCTV_COMMAND = ['ffmpeg',
 
 CAMERA_SOURCE = 'rtsp://admin:hikvision123@192.168.11.145:554/ISAPI/streaming/channels/101'
 
-def main_function(capture_mode, camera_source, width, height):
+def main_function(capture_mode, camera_source, width, height, rotate):
     while True:
         coppied_command = copy.deepcopy(CCTV_COMMAND)
         coppied_command[2] = camera_source
@@ -34,7 +34,7 @@ def main_function(capture_mode, camera_source, width, height):
         
 
         if cmd == "1":
-            video_frame = VideoFrame()
+            video_frame = VideoFrame(int(rotate))
 
             print("-" * 50 + "\n")
             video_frame.set_capture_mode(capture_mode=capture_mode)
@@ -62,7 +62,8 @@ if __name__ == "__main__":
     parser.add_argument("--source", help="webcam index, RTSP/HTTP address or other camera source", default='rtsp://admin:hikvision123@192.168.11.145:554/ISAPI/streaming/channels/101')
     parser.add_argument("--width", help="frame width (needed when using in FFMPEG mode)", default=1080)
     parser.add_argument("--height", help="frame height (needed when using in FFMPEG mode)", default=1920)
+    parser.add_argument("--rotate", help="write 1 to rotate the frame clockwise", default=0)
 
     args = parser.parse_args()
 
-    main_function(args.mode, args.source, args.width, args.height)
+    main_function(args.mode, args.source, args.width, args.height, args.rotate)

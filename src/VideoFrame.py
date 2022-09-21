@@ -12,7 +12,7 @@ class VideoFrame:
     Stream or save video frame from WEBCAM or IPCAM
     '''
 
-    def __init__(self):
+    def __init__(self, rotate):
         '''
         Class cunstructor
         '''
@@ -20,6 +20,11 @@ class VideoFrame:
         self.is_auto_screenshot = False
         self.save_flag = False
         self.is_full_auto = False
+        
+        if rotate == 1:
+            self.is_rotate = True
+        else:
+            self.is_rotate = False
 
     def set_capture_mode(self, capture_mode):
         '''
@@ -106,6 +111,9 @@ class VideoFrame:
 
             while True:
                 success, frame = self.cap.read()
+
+                if self.is_rotate:
+                    frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
                 
                 if not success:
                     continue
