@@ -58,6 +58,9 @@ class VideoFrame:
         if self.capture_mode == FFMPEG_MODE:
             print(f"image frame: {self.width} x {self.height}")
 
+        elif self.capture_mode == OPENCV_MODE:
+            print(f"image frame: {self.width} x {self.height}")
+
     def set_autocapture(self, count, time_interval):
         '''
         Set some variables used for auto screenshot capture
@@ -80,6 +83,8 @@ class VideoFrame:
             try:
                 webcam_source = int(self.camera_source)
                 self.cap = cv2.VideoCapture(webcam_source)
+                self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
+                self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
 
             except Exception as e:
                 self.cap = cv2.VideoCapture(self.camera_source)
@@ -116,11 +121,16 @@ class VideoFrame:
                     self.save_timestamp = time()
 
                 if cv2.waitKey(1) == ord("a"):
-                    self.is_auto_screenshot = True
-                    self.init_time = time()
-                    self.last_capture = self.init_time
-                    print(f"auto capture started: time interval {self.time_interval}, count {self.count}")
+
+                    if not self.is_auto_screenshot:
+                        self.is_auto_screenshot = True
+                        self.init_time = time()
+                        self.last_capture = self.init_time
+                        print(f"auto capture started: time interval {self.time_interval}, count {self.count}")
                 
+                    else:
+                        self.is_auto_screenshot = False
+
                 if cv2.waitKey(1) == ord("f"):
 
                     if not self.is_full_auto:
