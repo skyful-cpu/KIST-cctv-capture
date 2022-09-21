@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import subprocess
 import os
-from time import time, strftime, localtime
+from time import sleep, time, strftime, localtime
 
 OPENCV_MODE = "OPENCV"
 FFMPEG_MODE = "FFMPEG"
@@ -19,6 +19,7 @@ class VideoFrame:
 
         self.is_auto_screenshot = False
         self.save_flag = False
+        self.is_full_auto = False
 
     def set_capture_mode(self, capture_mode):
         '''
@@ -109,17 +110,29 @@ class VideoFrame:
                     self.cap.release()
                     break
 
-                if cv2.waitKey(1) == 115:
+                if cv2.waitKey(1) == ord("s"):
                     self.save_screenshot(frame)
                     self.save_flag = True
                     self.save_timestamp = time()
 
-                if cv2.waitKey(1) == 97:
+                if cv2.waitKey(1) == ord("a"):
                     self.is_auto_screenshot = True
                     self.init_time = time()
                     self.last_capture = self.init_time
                     print(f"auto capture started: time interval {self.time_interval}, count {self.count}")
                 
+                if cv2.waitKey(1) == ord("f"):
+
+                    if not self.is_full_auto:
+                        self.is_full_auto = True
+
+                    else:
+                        self.is_full_auto = False
+                
+                if self.is_full_auto:
+                    self.save_screenshot(frame)
+                    frame = self.start_full_auto_screenshot(frame)
+
                 if self.is_auto_screenshot:
                     self.save_screenshot_auto(frame)
                     frame = self.show_count(frame)
@@ -149,6 +162,16 @@ class VideoFrame:
                         self.is_auto_screenshot = True
                         self.init_time = time()
                         self.last_capture = self.init_time
+
+                    if cv2.waitKey(1) == ord("f"):
+
+                        if not self.is_full_auto:
+                            self.is_full_auto = True
+                            self.save_screenshot(frame)
+                            self.start_full_auto_screenshot(frame)
+
+                        else:
+                            self.is_full_auto = False
                     
                     if self.is_auto_screenshot:
                         self.save_screenshot_auto(frame)
@@ -185,7 +208,7 @@ class VideoFrame:
         save current frame to file directory
         '''
 
-        print("saving screenshot...")
+        # print("saving screenshot...")
         dir_name = strftime('%y%m%d', localtime())
         file_name = strftime("%y%m%d_%H-%M-%S", localtime())
 
@@ -222,6 +245,20 @@ class VideoFrame:
         frame_return = cv2.putText(
             frame,
             f"{str(round(self.time_interval - (time() - self.last_capture)))} sec remain... ({self.current_count}/{self.count})",
+            (10, 80),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            3,
+            (250, 0, 0),
+            3
+        )
+
+        return frame_return
+
+    def start_full_auto_screenshot(self, frame):
+
+        frame_return = cv2.putText(
+            frame,
+            f"full auto screenshot...",
             (10, 80),
             cv2.FONT_HERSHEY_SIMPLEX,
             3,
